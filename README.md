@@ -1,78 +1,165 @@
-# The OWASP Vulnerable Container Hub Project
+# WebGoat: A deliberately insecure Web Application
 
-### Background
+[![Build](https://github.com/WebGoat/WebGoat/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/WebGoat/WebGoat/actions/workflows/build.yml)
+[![java-jdk](https://img.shields.io/badge/java%20jdk-25-green.svg)](https://jdk.java.net/)
+[![OWASP Labs](https://img.shields.io/badge/OWASP-Lab%20project-f7b73c.svg)](https://owasp.org/projects/)
+[![GitHub release](https://img.shields.io/github/release/WebGoat/WebGoat.svg)](https://github.com/WebGoat/WebGoat/releases/latest)
+[![Gitter](https://badges.gitter.im/OWASPWebGoat/community.svg)](https://gitter.im/OWASPWebGoat/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Discussions](https://img.shields.io/github/discussions/WebGoat/WebGoat)](https://github.com/WebGoat/WebGoat/discussions)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
-There are many repositories out there to provide vulnerable environments such as web applications, containers or virtual machines to those who want to learn security, since it helps not only students or someone who recently joined the field to learn the relevant security techs, but also security professionals to keep hand-on.
+# Introduction
 
-Among the approaches, the easiest way these days is using containers(e.g. docker or podman).
+WebGoat is a deliberately insecure web application maintained by [OWASP](http://www.owasp.org/) designed to teach web
+application security lessons.
 
-Running containers with like just one command such as `docker run` or `docker compose up` sounds awesome!
+This program is a demonstration of common server-side application flaws. The
+exercises are intended to be used by people to learn about application security and
+penetration testing techniques.
 
-### Problem statement
+**WARNING 1:** *While running this program your machine will be extremely
+vulnerable to attack. You should disconnect from the Internet while using
+this program.*  WebGoat's default configuration binds to localhost to minimize
+the exposure.
 
-The problem is, you cannot exactly know what it does(especially, considering it is a **vulnerable** container), when running a container, if you simply run a container without knowing how it was built.
+**WARNING 2:** *This program is for educational purposes only. If you attempt
+these techniques without authorization, you are very likely to get caught. If
+you are caught engaging in unauthorized hacking, most companies will fire you.
+Claiming that you were doing security research will not work as that is the
+first thing that all hackers claim.*
 
-Dockerfile provides the information.
+![WebGoat](docs/images/webgoat.png)
 
-Although sometimes Dockerfile is available in the registry service such as [hub.docker.com](http://hub.docker.com) or [quay.io](https://quay.io) or some information on what commands have been used can be derived from `docker history` or IMAGE LAYERS is available, it is challenging to find out some important information such as the base image which was used to build the image (e.g. specified as FROM  in Dockerfile)
+# Installation instructions:
 
-What’s a risker situation is, when a user is asked to run docker with the `-v` option or docker-compose whose config file has volume configuration. If they do not pay attention, a possible scenario may include where their files on the host can be stolen to some malicious users.  If a user is asked to run a container with `--privileged` or `--user=root`, it can be much more serious, as there is a risk where an attacker can set a foothold in the container and escape to your host.
+For more details check [the Contribution guide](/CONTRIBUTING.md)
 
-See [Docker Security - OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html) for more information on Docker security.
+## 1. Run using Docker
 
-Therefore, a User who wants to learn or set up test environments must be cautious when running a vulnerable container image. Providing the user with the access to Dockerfile and documentation will help minimize such risks, if not all, so that the user can enjoy learning and practicing for security safely.
+Already have a browser and ZAP and/or Burp installed on your machine in this case you can run the WebGoat image directly using Docker.
 
-### VULCONHUB
+Every release is also published on [DockerHub](https://hub.docker.com/r/webgoat/webgoat).
 
-The OWASP Vulnerable Container Hub(VULCONHUB) is a project that provides:
-
-- access to Dockerfile(or a similar Containerfile) along with files that are used to build the vulnerable container image
-- documentation such as README that describes how to use the container, and optionally, a link to the image in the registry service such as Docker Hub or Quay.io, where a user can directly pull and run the container (on their own account).
-
-The files provided in the repository allow users to build vulnerable container images, so that they can freely and **safely** learn, play, practice, and perform quick proof-of-concepts of CVE vulnerabilities or use them for preparation for their CTF challenges.
-
-The ultimate goal of the project is to become the go-to reference to help anyone interested in security to share and maintain such useful container build files for security learning and practices.
-
-
-### Usage
-
-1. Init and update submodules (a submodule is a link to the original repository). 
-
-```bash
-$ git submodule init
-$ git submodule update
+```shell
+docker run -it -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 webgoat/webgoat
 ```
 
-It is also possible to specify a path which is only necessary for you, to reduce time and keep disk usage to a minimum.
+For some lessons you need the container run in the same timezone. For this you can set the TZ environment variable.
+E.g.
 
-```bash
-$ git submodule init <path> [--recursive]
-```
-For more information on the git submodule, see [https://git-scm.com/book/en/v2/Git-Tools-Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
-
-2. cd to a directory you are interested in.
-3. Examine Dockerfile
-4. Build your own container image
-
-```bash
-$ docker build . -t local/<image-name>`
+```shell
+docker run -it -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 -e TZ=America/Boise webgoat/webgoat
 ```
 
-5. Run with the proper option such as port. See documentation such as README available in the directory.
+If you want to use OWASP ZAP or another proxy, you can no longer use 127.0.0.1 or localhost. but
+you can use custom host entries. For example:
 
-```bash
-$ docker run -p <hostport>:<containerport> local/<image-name>
+```shell
+127.0.0.1 www.webgoat.local www.webwolf.local
 ```
 
-# Contributing
+Then you can run the container with:
 
-Any contribution is more than welcome!!
+```shell
+docker run -it -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 -e WEBGOAT_HOST=www.webgoat.local -e WEBWOLF_HOST=www.webwolf.local -e TZ=America/Boise webgoat/webgoat
+```
 
-Please create a Pull Request to add new container build files. Either adding your own files or adding submodules will be welcome.
+Then visit http://www.webgoat.local:8080/WebGoat/ and http://www.webwolf.local:9090/WebWolf/
 
-For a pull request to be merged, each directory must have the following:
+## 2. Run using Docker with complete Linux Desktop
 
-1. Dockerfile and necessary files to build a vulnerable container
-2. README to describe how to run and use the container.
+Instead of installing tools locally we have a complete Docker image based on running a desktop in your browser. This way you only have to run a Docker image which will give you the best user experience.
 
+```shell
+docker run -p 127.0.0.1:3000:3000 webgoat/webgoat-desktop
+```
+
+## 3. Standalone
+
+Download the latest WebGoat release from [https://github.com/WebGoat/WebGoat/releases](https://github.com/WebGoat/WebGoat/releases)
+
+```shell
+export TZ=Europe/Amsterdam # or your timezone
+java -Dfile.encoding=UTF-8 -jar webgoat-2023.8.jar
+```
+
+Click the link in the log to start WebGoat.
+
+### 3.1 Running on a different port
+
+If for some reason you want to run WebGoat on a different port, you can do so by adding the following parameter:
+
+```shell
+java -jar webgoat-2023.8.jar --webgoat.port=8001 --webwolf.port=8002
+```
+
+For a full overview of all the parameters you can use, please check the [WebGoat properties file](webgoat-container/src/main/resources/application-{webgoat, webwolf}.properties).
+
+## 4. Run from the sources
+
+### Prerequisites:
+
+* Java 25
+* Your favorite IDE
+* Git, or Git support in your IDE
+
+Open a command shell/window:
+
+```Shell
+git clone git@github.com:WebGoat/WebGoat.git
+```
+
+Now let's start by compiling the project.
+
+```Shell
+cd WebGoat
+git checkout <<branch_name>>
+# On Linux/Mac:
+./mvnw clean install
+
+# On Windows:
+./mvnw.cmd clean install
+
+# Using docker or podman, you can than build the container locally
+docker build -f Dockerfile . -t webgoat/webgoat
+```
+
+Now we are ready to run the project. WebGoat is using Spring Boot.
+
+```Shell
+# On Linux/Mac:
+./mvnw spring-boot:run
+# On Windows:
+./mvnw.cmd spring-boot:run
+
+```
+
+... you should be running WebGoat on http://localhost:8080/WebGoat momentarily.
+
+Note: The above link will redirect you to login page if you are not logged in. LogIn/Create account to proceed.
+
+To change the IP address add the following variable to the `WebGoat/webgoat-container/src/main/resources/application.properties` file:
+
+```
+server.address=x.x.x.x
+```
+
+## 4. Run with custom menu
+
+For specialist only. There is a way to set up WebGoat with a personalized menu. You can leave out some menu categories or individual lessons by setting certain environment variables.
+
+For instance running as a jar on a Linux/macOS it will look like this:
+
+```Shell
+export TZ=Europe/Amsterdam # or your timezone
+export EXCLUDE_CATEGORIES="CLIENT_SIDE,GENERAL,CHALLENGE"
+export EXCLUDE_LESSONS="SqlInjectionAdvanced,SqlInjectionMitigations"
+java -jar target/webgoat-2023.8-SNAPSHOT.jar
+```
+
+Or in a docker run it would (once this version is pushed into docker hub) look like this:
+
+```Shell
+docker run -d -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 -e EXCLUDE_CATEGORIES="CLIENT_SIDE,GENERAL,CHALLENGE" -e EXCLUDE_LESSONS="SqlInjectionAdvanced,SqlInjectionMitigations" webgoat/webgoat
+```
 
